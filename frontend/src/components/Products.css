@@ -1,0 +1,182 @@
+/* PAGE HEADER */
+.page-header {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #d1d1d1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* WRAPPER FOR BUTTONS */
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  /* space between both buttons */
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-label {
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-card strong {
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.warning-card strong {
+  color: #b45309;
+}
+
+.success-card strong {
+  color: #15803d;
+}
+
+.stock-low {
+  display: inline-block;
+  background: #fff7ed;
+  color: #c2410c;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.stock-ok {
+  display: inline-block;
+  background: #ecfdf5;
+  color: #166534;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* BLUE BUTTONS */
+.btn-blue {
+  padding: 7px 16px;
+  background: #0d6efd;
+  /* ✅ matches Product List blue */
+  border: none;
+  color: white;
+  font-size: 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-blue:hover {
+  background: #0954c6;
+  /* darker blue hover */
+}
+
+.data-table td:first-child {
+
+  font-size: 12px;
+  width: 50px;
+  text-align: left;
+
+}
+
+/* DELETE BUTTON */
+.btn-danger {
+  padding: 6px 12px;
+  background: #dc3545;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #b02a37;
+}
+
+/* BACK BUTTON */
+.btn-back {
+  padding: 6px 12px;
+  background: #6c757d;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn-back:hover {
+  background: #565e64;
+}
+
+/* TITLE BOX — now BLUE instead of RED */
+.box-title {
+  background: #0d6efd;
+  /* ✅ changed to button color */
+  padding: 16px;
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+/* FORM */
+.form-floating {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+label {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+/* SUBMIT BUTTON */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #0d6efd;
+  border: none;
+  font-size: 18px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #0954c6;
+}

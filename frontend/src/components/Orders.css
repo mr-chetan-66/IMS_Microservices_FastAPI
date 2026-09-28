@@ -1,0 +1,87 @@
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #d1d1d1;
+    margin-bottom: 20px;
+}
+
+.btn-back {
+    padding: 6px 12px;
+    background: #6c757d;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+}
+.btn-back:hover {
+    background: #565e64;
+}
+
+.order-banner {
+    background: #0d6efd;
+    padding: 16px;
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    border-radius: 6px;
+    margin-bottom: 26px;
+}
+
+.order-form {
+    max-width: 500px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 6px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.input-box {
+    padding: 10px 14px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: 0.25s ease;
+}
+
+.input-box:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: #0d6efd;
+    border: none;
+    font-size: 18px;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    background: #0954c6;
+}
+
+/* ✅ PRICE DISPLAY BOX */
+.price-box {
+    margin-top: 24px;
+    padding: 14px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    width: fit-content;
+}

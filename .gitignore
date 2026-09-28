@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / React
+node_modules/
+frontend/build/
+frontend/.cache/
+
+# Logs
+*.log
+
+# Redis / local data
+*.rdb
+*.aof

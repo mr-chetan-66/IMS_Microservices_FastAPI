@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+redis-om
+requests
+httpx
+python-dotenv
