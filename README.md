@@ -93,3 +93,9 @@ From the `frontend` directory:
 ```powershell
 npm run build
 ```
+
+## Render order processing
+
+Set `REACT_APP_INVENTORY_API_URL` and `REACT_APP_PAYMENT_API_URL` on the frontend service before building. Set `INVENTORY_API_URL` on the payment API to `https://inventory-api-service-ol8s.onrender.com`, and configure the `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, and `REDIS_PASSWORD` variables on both APIs and each worker. The APIs allow Render-hosted frontend origins by default; for a custom frontend domain, add its exact origin to `CORS_ORIGINS` on both APIs.
+
+Stock changes are handled by a separate Render **Background Worker**, not by the inventory API. Create one from this repository on branch `main`, leave its root directory at the repository root, set its build command to `pip install -r requirement.txt`, and set its start command to `python backend/inventory-microservice/consumer.py`. Give it the same Redis environment variables as the APIs. To process refunds and update order statuses, create a second worker with start command `python backend/payment-microservice/consumer.py` and the same Redis variables.
