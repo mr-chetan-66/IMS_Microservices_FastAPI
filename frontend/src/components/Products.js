@@ -9,21 +9,33 @@ export const Products = () => {
 
     const [product, setProduct] = useState([]);
     const [lowStockCount, setLowStockCount] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         void (async () => {
-            const cacheKey = `${INVENTORY_API}/products`;
+            const cacheKey = `${INVENTORY_API}/products/`;
             const cached = readCache(cacheKey, 30000);
             if (cached) {
                 setProduct(cached);
                 setLowStockCount(cached.filter((item) => item.quantity <= 5).length);
+                setLoading(false);
             }
 
-            const response = await fetch(`${INVENTORY_API}/products`);
-            const content = await response.json();
-            setProduct(content);
-            setLowStockCount(content.filter((item) => item.quantity <= 5).length);
-            writeCache(cacheKey, content, 30000);
+            try {
+                const response = await fetch(`${INVENTORY_API}/products`);
+                if (!response.ok) throw new Error(`Product request failed (${response.status})`);
+                const content = await response.json();
+                if (!Array.isArray(content)) throw new Error("Product response was invalid");
+                setProduct(content);
+                setLowStockCount(content.filter((item) => item.quantity <= 5).length);
+                writeCache(cacheKey, content, 30000);
+                setError("");
+            } catch (error) {
+                setError("Could not load products. Please check the inventory service.");
+            } finally {
+                setLoading(false);
+            }
         })();
     }, []);
 
@@ -32,7 +44,7 @@ export const Products = () => {
             await fetch(`${INVENTORY_API}/products/${id}`, {
                 method: "DELETE"
             });
-            clearCacheKey(`${INVENTORY_API}/products`);
+            clearCacheKey(`${INVENTORY_API}/products/`);
             setProduct((prev) => prev.filter((p) => p.pk !== id));
         }
     };
@@ -80,7 +92,13 @@ export const Products = () => {
                     </thead>
 
                     <tbody>
-                        {product.map(product => (
+                        {loading && product.length === 0 ? (
+                            <tr><td colSpan="5" role="status" style={{ textAlign: "center" }}>Loading products...</td></tr>
+                        ) : error && product.length === 0 ? (
+                            <tr><td colSpan="5" role="alert" style={{ textAlign: "center" }}>{error}</td></tr>
+                        ) : product.length === 0 ? (
+                            <tr><td colSpan="5" style={{ textAlign: "center", color: "#64748b" }}>{error || "No products found."}</td></tr>
+                        ) : product.map(product => (
                             <tr key={product.pk}>
                                 <td>{product.pk}</td>
                                 <td>{product.name}</td>

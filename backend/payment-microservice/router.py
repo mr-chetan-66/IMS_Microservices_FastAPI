@@ -17,8 +17,8 @@ def get_order_all():
 def get_order(pk:str):
     return db_func.get_order(pk)
 
-@router.post("/")
-def post_order(request:OrderCreate,bgtask:BackgroundTasks,response_model=OrderDisplay):
+@router.post("/", response_model=OrderDisplay)
+def post_order(request:OrderCreate,bgtask:BackgroundTasks):
     return db_func.post_order(request, bgtask)
 
 

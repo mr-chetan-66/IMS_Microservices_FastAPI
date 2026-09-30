@@ -5,7 +5,7 @@ from fastapi import HTTPException,status
 def get_all_products():
     products=Product.all_pks()
     if not products:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No Product Available!!")
+        return []
     pl=[Product.get(pk) for pk in products]
     return sorted(pl,key=lambda x:(x.price,x.name), reverse=True)
 

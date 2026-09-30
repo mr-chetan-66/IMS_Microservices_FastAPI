@@ -6,25 +6,44 @@ import { readCache, writeCache } from "../cache";
 
 export const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        void (async () => {
-            try {
-                const cacheKey = `${PAYMENT_API}/order/all`;
-                const cached = readCache(cacheKey, 30000);
-                if (cached) {
-                    setOrders(cached);
-                }
+        let cancelled = false;
 
+        void (async () => {
+            const cacheKey = `${PAYMENT_API}/order/all`;
+            const cached = readCache(cacheKey, 30000);
+            if (Array.isArray(cached)) {
+                setOrders(cached);
+                setLoading(false);
+            }
+
+            try {
                 const response = await fetch(`${PAYMENT_API}/order/all`);
+                if (!response.ok) {
+                    throw new Error(`Order history request failed (${response.status})`);
+                }
                 const content = await response.json();
+                if (!Array.isArray(content)) {
+                    throw new Error("Order history response was invalid");
+                }
+                if (cancelled) return;
                 setOrders(content);
                 writeCache(cacheKey, content, 30000);
+                setError("");
             } catch (error) {
                 console.error("Failed to load order history", error);
-                setOrders([]);
+                if (!cancelled) setError("Could not load order history. Please try again.");
+            } finally {
+                if (!cancelled) setLoading(false);
             }
         })();
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     return (
@@ -49,10 +68,14 @@ export const OrderHistory = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {orders.length === 0 ? (
+                        {loading && orders.length === 0 ? (
+                            <tr><td colSpan="6" role="status" style={{ textAlign: "center" }}>Loading orders...</td></tr>
+                        ) : error && orders.length === 0 ? (
+                            <tr><td colSpan="6" role="alert" style={{ textAlign: "center" }}>{error}</td></tr>
+                        ) : orders.length === 0 ? (
                             <tr>
                                 <td colSpan="6" style={{ textAlign: "center", color: "#64748b" }}>
-                                    No orders found.
+                                    {error || "No orders found."}
                                 </td>
                             </tr>
                         ) : (

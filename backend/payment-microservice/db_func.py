@@ -6,7 +6,6 @@ import requests
 from fastapi import HTTPException
 from model import Order
 from fastapi.background import BackgroundTasks
-import time
 from database import redis
 from schema import OrderCreate
 
@@ -14,10 +13,7 @@ INVENTORY_API_URL = os.getenv("INVENTORY_API_URL", "http://localhost:8000")
 
 
 def get_all_order():
-    try:
-        return [Order.get(pk) for pk in Order.all_pks()]
-    except:
-        raise HTTPException(status_code=404, detail="No Order found")
+    return [Order.get(pk) for pk in Order.all_pks()]
 
 def get_order(pk:str):
     try:
@@ -59,7 +55,6 @@ def post_order(request:OrderCreate,bgtask:BackgroundTasks):
     return order
 
 def order_completed(order_id: str):
-    time.sleep(5)
     order = Order.get(order_id)
 
     payload = {
