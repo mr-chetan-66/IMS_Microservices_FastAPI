@@ -13,3 +13,4 @@ class OrderDisplay(HashModel):
     total:float
     quantity:int
     status:str
+    created_at:str

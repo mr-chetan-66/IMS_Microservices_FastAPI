@@ -3,6 +3,7 @@ import "./Orders.css";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { INVENTORY_API, PAYMENT_API } from "../api";
+import { readCache, writeCache, clearCacheKey } from "../cache";
 
 export const Orders = () => {
 
@@ -14,10 +15,19 @@ export const Orders = () => {
         (async () => {
             try {
                 if (id) {
+                    const cacheKey = `${INVENTORY_API}/products/${id}`;
+                    const cached = readCache(cacheKey, 30000);
+                    if (cached) {
+                        const price = (parseFloat(cached.price) * 1.2).toFixed(2);
+                        const total = (price * quantity).toFixed(2);
+                        setMessage(`Your product price is $${price}\nTotal= ${total}`);
+                        return;
+                    }
+
                     const response = await fetch(`${INVENTORY_API}/products/${id}`);
                     const content = await response.json();
+                    writeCache(cacheKey, content, 30000);
 
-                    // multiply price just like your logic
                     const price = (parseFloat(content.price) * 1.2).toFixed(2);
                     const total = (price * quantity).toFixed(2);
 
@@ -52,7 +62,11 @@ export const Orders = () => {
             if (!response.ok) {
                 throw new Error("Order failed");
             }
+
+            clearCacheKey(`${INVENTORY_API}/products`);
+            clearCacheKey(`${PAYMENT_API}/order/all`);
             alert(`✅ Order placed!`);
+            window.location.href = "/";
 
         } catch (err) {
             alert("❌ Could not place order");

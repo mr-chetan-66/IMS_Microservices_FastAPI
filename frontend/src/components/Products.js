@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import "./Products.css";
 import { INVENTORY_API } from "../api";
+import { readCache, writeCache, clearCacheKey } from "../cache";
 
 export const Products = () => {
 
@@ -11,10 +12,18 @@ export const Products = () => {
 
     useEffect(() => {
         void (async () => {
+            const cacheKey = `${INVENTORY_API}/products`;
+            const cached = readCache(cacheKey, 30000);
+            if (cached) {
+                setProduct(cached);
+                setLowStockCount(cached.filter((item) => item.quantity <= 5).length);
+            }
+
             const response = await fetch(`${INVENTORY_API}/products`);
             const content = await response.json();
             setProduct(content);
             setLowStockCount(content.filter((item) => item.quantity <= 5).length);
+            writeCache(cacheKey, content, 30000);
         })();
     }, []);
 
@@ -23,6 +32,7 @@ export const Products = () => {
             await fetch(`${INVENTORY_API}/products/${id}`, {
                 method: "DELETE"
             });
+            clearCacheKey(`${INVENTORY_API}/products`);
             setProduct((prev) => prev.filter((p) => p.pk !== id));
         }
     };

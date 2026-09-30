@@ -1,5 +1,6 @@
 # import httpx
 import os
+from datetime import datetime
 
 import requests
 from fastapi import HTTPException
@@ -50,6 +51,7 @@ def post_order(request:OrderCreate,bgtask:BackgroundTasks):
         total=1.2 * product_price * q,
         quantity=q,
         status="pending",
+        created_at=datetime.utcnow().isoformat(timespec="seconds"),
     )
 
     order.save()

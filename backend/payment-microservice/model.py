@@ -8,6 +8,7 @@ class Order(HashModel,index=True):
     total:float
     quantity:int
     status:str # pending/completed/refund
+    created_at:str
 
     class Meta:
         database=redis
