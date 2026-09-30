@@ -2,6 +2,7 @@ import { Wrapper } from "./Wrapper";
 import { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import "./Products.css";
+import { INVENTORY_API } from "../api";
 
 export const Products = () => {
 
@@ -10,7 +11,7 @@ export const Products = () => {
 
     useEffect(() => {
         void (async () => {
-            const response = await fetch('http://localhost:8000/products');
+            const response = await fetch(`${INVENTORY_API}/products`);
             const content = await response.json();
             setProduct(content);
             setLowStockCount(content.filter((item) => item.quantity <= 5).length);
@@ -19,7 +20,7 @@ export const Products = () => {
 
     const deleteProduct = async (id) => {
         if (window.confirm("Are you really want ot delete this record?")) {
-            await fetch(`http://localhost:8000/products/${id}`, {
+            await fetch(`${INVENTORY_API}/products/${id}`, {
                 method: "DELETE"
             });
             setProduct((prev) => prev.filter((p) => p.pk !== id));

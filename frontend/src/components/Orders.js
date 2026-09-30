@@ -2,6 +2,7 @@ import { Wrapper } from "./Wrapper";
 import "./Orders.css";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { INVENTORY_API, PAYMENT_API } from "../api";
 
 export const Orders = () => {
 
@@ -13,7 +14,7 @@ export const Orders = () => {
         (async () => {
             try {
                 if (id) {
-                    const response = await fetch(`http://localhost:8000/products/${id}`);
+                    const response = await fetch(`${INVENTORY_API}/products/${id}`);
                     const content = await response.json();
 
                     // multiply price just like your logic
@@ -37,7 +38,7 @@ export const Orders = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:8001/order/", {
+            const response = await fetch(`${PAYMENT_API}/order/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

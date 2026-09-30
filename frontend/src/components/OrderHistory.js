@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Wrapper } from "./Wrapper";
+import { PAYMENT_API } from "../api";
 
 export const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
@@ -8,7 +9,7 @@ export const OrderHistory = () => {
     useEffect(() => {
         void (async () => {
             try {
-                const response = await fetch("http://localhost:8001/order/all");
+                const response = await fetch(`${PAYMENT_API}/order/all`);
                 const content = await response.json();
                 setOrders(content);
             } catch (error) {

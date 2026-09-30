@@ -1,6 +1,7 @@
 import {Wrapper} from "./Wrapper";
 import "./Products.css";
 import {Link} from "react-router-dom";
+import { INVENTORY_API } from "../api";
 
 export const ProductsCreate = () => {
 
@@ -13,7 +14,7 @@ export const ProductsCreate = () => {
             quantity: e.target.quantity.value
         };
 
-        await fetch("http://localhost:8000/products", {
+        await fetch(`${INVENTORY_API}/products`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
