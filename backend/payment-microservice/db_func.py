@@ -5,7 +5,6 @@ from datetime import datetime
 import requests
 from fastapi import HTTPException
 from model import Order
-from fastapi.background import BackgroundTasks
 from database import redis
 from schema import OrderCreate
 
@@ -13,7 +12,12 @@ INVENTORY_API_URL = os.getenv("INVENTORY_API_URL", "http://localhost:8000")
 
 
 def get_all_order():
-    return [Order.get(pk) for pk in Order.all_pks()]
+    orders = [Order.get(pk) for pk in Order.all_pks()]
+    return sorted(
+        orders,
+        key=lambda order: (order.created_at or "", order.pk or ""),
+        reverse=True,
+    )
 
 def get_order(pk:str):
     try:
@@ -21,7 +25,7 @@ def get_order(pk:str):
     except:
         raise HTTPException(status_code=404, detail="Order not found")
 
-def post_order(request:OrderCreate,bgtask:BackgroundTasks):
+def post_order(request: OrderCreate):
     try:
         req_of_product = requests.get(f"{INVENTORY_API_URL}/products/{request.product_id}", timeout=10)
     except requests.RequestException as exc:
@@ -46,17 +50,19 @@ def post_order(request:OrderCreate,bgtask:BackgroundTasks):
         fee=0.2 * product_price,
         total=1.2 * product_price * q,
         quantity=q,
-        status="pending",
+        status="completed",
         created_at=datetime.utcnow().isoformat(timespec="seconds"),
     )
 
     order.save()
-    bgtask.add_task(order_completed, order.pk)
+    try:
+        publish_order(order)
+    except Exception as exc:
+        Order.delete(order.pk)
+        raise HTTPException(status_code=503, detail="Could not queue order for inventory update") from exc
     return order
 
-def order_completed(order_id: str):
-    order = Order.get(order_id)
-
+def publish_order(order: Order):
     payload = {
         "order_id": order.pk,
         "product_id": order.product_id,
@@ -65,15 +71,10 @@ def order_completed(order_id: str):
 
     redis.xadd("order_completed", payload, "*", maxlen=1000)
 
-    order.status = "completed"
-    order.save()
-
 def delete_all_order():
-    try:
-        [Order.delete(pk) for pk in Order.all_pks()]
-        return "All Order Deleted!!"
-    except:
-        raise HTTPException(status_code=404, detail="No Order found")
+    for pk in Order.all_pks():
+        Order.delete(pk)
+    return {"message": "All orders deleted"}
 
 def delete_order(pk:str):
     try:

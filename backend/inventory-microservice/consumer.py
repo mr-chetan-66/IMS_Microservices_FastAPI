@@ -1,47 +1,66 @@
+import logging
+import socket
+from threading import Event
+
 from database import redis
 from model import Product
+from redis.exceptions import ResponseError
 
-STREAM='order_completed'
-GROUP='inventory-group'
+STREAM = "order_completed"
+GROUP = "inventory-group"
+logger = logging.getLogger(__name__)
 
-try:
-    redis.xgroup_create(STREAM, GROUP, id="0-0", mkstream=True)
-    print(f"--> Created consumer group: {GROUP}")
-except:
-    print(f"--> {GROUP}: Group Already Exists")
 
-print("--> inventory-microservice consumer running... Waiting for messages...\n")
+def consume_orders(stop_event: Event):
+    consumer_name = f"inventory-{socket.gethostname()}"
+    group_ready = False
 
-while True:
-    try:
-        message=redis.xreadgroup(GROUP,STREAM,{STREAM:">"},count=10,block=1000)
-
-        for stream_name,event in message:
-            for msg_id,data in event:
-                print("\n--> Received message from \'order_completed\'")
-                print(f"--> Message ID: {msg_id}")
-                print(f"--> Data: {data}")
-
+    while not stop_event.is_set():
+        try:
+            if not group_ready:
                 try:
-                    product=Product.get(data['product_id'])
-                    qty = int(data['quantity'])
-                    if product.quantity < qty:
-                        raise ValueError(f"Insufficient stock to fulfill order {data['order_id']}")
+                    redis.xgroup_create(STREAM, GROUP, id="0-0", mkstream=True)
+                except ResponseError as exc:
+                    if "BUSYGROUP" not in str(exc):
+                        raise
+                group_ready = True
+                logger.info("Inventory order consumer started")
 
-                    print(f"--> Updating product {product.pk}, subtracting {qty} units")
-                    product.quantity -= qty
-                    product.save()
-                    print("--> inventory-microservice updated successfully")
-                    redis.xack(STREAM, GROUP, msg_id)
-                    print(f"--> Acknowledged message {msg_id}")
-                except Exception as e:
-                    print(f"--> Error updating inventory: {e}")
-                    print("--> Sending refund event to refund_completed stream")
+            messages = redis.xreadgroup(
+                GROUP,
+                consumer_name,
+                {STREAM: ">"},
+                count=10,
+                block=1000,
+            )
 
-                    redis.xadd("refund_completed", data, maxlen=1000)
-                    print("--> Refund event sent")
-                    redis.xack(STREAM, GROUP, msg_id)
-                    print(f"--> Acknowledged failed event {msg_id}")
+            for _, events in messages:
+                for message_id, data in events:
+                    _process_order(message_id, data)
+        except Exception:
+            logger.exception("Inventory order consumer failed; retrying")
+            stop_event.wait(1)
 
-    except Exception as e:
-        print(f"--> Error in consumer loop: {e}")
+
+def _process_order(message_id: str, data: dict):
+    try:
+        product = Product.get(data["product_id"])
+        quantity = int(data["quantity"])
+        if quantity <= 0 or product.quantity < quantity:
+            raise ValueError(f"Insufficient stock for order {data['order_id']}")
+
+        product.quantity -= quantity
+        product.save()
+        redis.xack(STREAM, GROUP, message_id)
+        logger.info("Inventory updated for order %s", data["order_id"])
+    except Exception:
+        logger.exception("Could not fulfill order %s", data.get("order_id"))
+        try:
+            redis.xadd("refund_completed", data, maxlen=1000)
+            redis.xack(STREAM, GROUP, message_id)
+        except Exception:
+            logger.exception("Could not publish refund for order %s", data.get("order_id"))
+
+
+if __name__ == "__main__":
+    consume_orders(Event())

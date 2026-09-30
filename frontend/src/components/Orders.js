@@ -8,12 +8,46 @@ import { readCache, writeCache, clearCacheKey } from "../cache";
 export const Orders = () => {
     const [id, setId] = useState("");
     const [quantity, setQuantity] = useState("");
+    const [products, setProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(true);
+    const [productsError, setProductsError] = useState("");
     const [product, setProduct] = useState(null);
     const [productLoading, setProductLoading] = useState(false);
     const [productError, setProductError] = useState("");
     const [submitError, setSubmitError] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let cancelled = false;
+        const cacheKey = `${INVENTORY_API}/products/`;
+        const cached = readCache(cacheKey, 30000);
+        if (Array.isArray(cached)) {
+            setProducts(cached);
+            setProductsLoading(false);
+        }
+
+        void (async () => {
+            try {
+                const response = await fetch(cacheKey);
+                if (!response.ok) throw new Error(`Product list request failed (${response.status})`);
+                const content = await response.json();
+                if (!Array.isArray(content)) throw new Error("Product list response was invalid");
+                if (cancelled) return;
+                setProducts(content);
+                writeCache(cacheKey, content, 30000);
+                setProductsError("");
+            } catch (error) {
+                if (!cancelled) setProductsError(error.message || "Could not load products");
+            } finally {
+                if (!cancelled) setProductsLoading(false);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -105,14 +139,36 @@ export const Orders = () => {
             <form className="order-form" onSubmit={submitOrder}>
 
                 <div className="form-group">
-                    <label>Product ID</label>
+                    <label htmlFor="product-select">Product</label>
+                    <select
+                        id="product-select"
+                        className="input-box"
+                        value={id}
+                        required
+                        disabled={productsLoading || products.length === 0}
+                        onChange={(event) => {
+                            const selectedProduct = products.find((item) => item.pk === event.target.value);
+                            setId(selectedProduct?.pk || "");
+                            setProduct(selectedProduct || null);
+                        }}
+                    >
+                        <option value="">
+                            {productsLoading ? "Loading products..." : productsError || "Choose a product"}
+                        </option>
+                        {products.map((item) => (
+                            <option key={item.pk} value={item.pk}>
+                                {item.name} (ID: {item.pk})
+                            </option>
+                        ))}
+                    </select>
+                    <label htmlFor="product-id">Product ID</label>
                     <input
+                        id="product-id"
                         name="productId"
                         className="input-box"
-                        placeholder="Enter product ID"
+                        readOnly
                         required
                         value={id}
-                        onChange={(e) => setId(e.target.value)}
                     />
                 </div>
 
@@ -131,7 +187,7 @@ export const Orders = () => {
                     />
                 </div>
 
-                <button className="submit-btn" type="submit" disabled={submitting || productLoading}>
+                <button className="submit-btn" type="submit" disabled={submitting || productLoading || productsLoading || !id}>
                     {submitting ? "Placing order..." : "Buy"}
                 </button>
             </form>

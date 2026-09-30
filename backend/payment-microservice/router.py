@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from fastapi.background import BackgroundTasks
 import db_func
 from schema import OrderDisplay,OrderCreate
 from typing import List
@@ -18,14 +17,14 @@ def get_order(pk:str):
     return db_func.get_order(pk)
 
 @router.post("/", response_model=OrderDisplay)
-def post_order(request:OrderCreate,bgtask:BackgroundTasks):
-    return db_func.post_order(request, bgtask)
+def post_order(request: OrderCreate):
+    return db_func.post_order(request)
 
 
 @router.delete("/all")
-def get_order_all():
+def delete_all_orders():
     return db_func.delete_all_order()
 
 @router.delete("/{pk}")
-def get_order(pk:str):
+def delete_order(pk: str):
     return db_func.delete_order(pk)
