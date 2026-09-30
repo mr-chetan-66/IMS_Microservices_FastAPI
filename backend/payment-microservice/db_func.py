@@ -1,4 +1,6 @@
 # import httpx
+import os
+
 import requests
 from fastapi import HTTPException
 from model import Order
@@ -6,6 +8,8 @@ from fastapi.background import BackgroundTasks
 import time
 from database import redis
 from schema import OrderCreate
+
+INVENTORY_API_URL = os.getenv("INVENTORY_API_URL", "http://localhost:8000")
 
 
 def get_all_order():
@@ -22,7 +26,7 @@ def get_order(pk:str):
 
 def post_order(request:OrderCreate,bgtask:BackgroundTasks):
     try:
-        req_of_product = requests.get(f"http://localhost:8000/products/{request.product_id}", timeout=10)
+        req_of_product = requests.get(f"{INVENTORY_API_URL}/products/{request.product_id}", timeout=10)
     except requests.RequestException as exc:
         raise HTTPException(status_code=503, detail="inventory-microservice service unavailable") from exc
 

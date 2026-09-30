@@ -2,7 +2,10 @@ export const Wrapper = props => {
     return <>
         {/* TOP NAVBAR */}
         <header className="top-navbar">
-            <div className="navbar-title">Company name</div>
+            <div className="navbar-title">
+                <img src="/logo.svg" alt="StockNest logo" style={{ width: 32, height: 32, marginRight: 10, verticalAlign: 'middle' }} />
+                StockNest
+            </div>
         </header>
 
     {/* PAGE LAYOUT */}
